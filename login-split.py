@@ -18,23 +18,27 @@ def welcome():
 def AdminWelcome():
     return 'You are an admin!'
 
-@app.route('/Search', methods =['GET', 'POST'])
+@app.route('/search', methods =['GET', 'POST'])
 def ManagerHome():
     a = conn.cursor()
-    a.execute("CREATE TABLE PurchaseOrder (ItemNa VARCHAR(50), Pri VARCHAR(25), ItemCount INT(50))")
     error = None
     if request.method == 'POST':
         item = request.form['search']
         sql = 'SELECT * FROM ItemTable WHERE ItemName = %s'
-        data = a.execute(sql, (item))
-        results = data.fetchall()
-        return render_template('results.html', table=table)
-    else:
-        flash('No results found!')
-        return redirect(url_for('ManagerHome'))
-    return render_template('Search.html', error = error)
+        a.execute(sql, (item))
+        results = a.fetchone()
+        N1 = results[0]
+        N2 = results[1]
+        N3 = results[2]
+        sql2 = 'INSERT INTO MatIndentTable VALUES (%s, %s, %s)'
+        a.execute(sql2, (str(N1), str(N2), N3))
+        conn.commit()
+        print(results)
+        return(str(results))
+        #return render_template('results.html')
+    return render_template('search.html', error = error)
 
-@app.route('/results')
+# @app.route('/results')
 
 @app.route('/VendorHome')
 def CustomerHome():
@@ -53,6 +57,7 @@ def login():
         if data2[2] == "Admin":
             return redirect(url_for('AdminWelcome'))
         elif data2[2] == "Manager":
+            print("Here")
             return redirect(url_for('ManagerHome'))
         elif data2[2] == "Vendor":
             return redirect(url_for('VendorHome'))
